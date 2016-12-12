@@ -115,31 +115,41 @@ app.ui.displayDeviceList = function()
 			var tx = device.advertisementData.kCBAdvDataTxPowerLevel;
 			var rssi = device.rssi;
 			var dist = 1.23;
-			var ratio = 1.23;
 			var tmp = 1.23;
-			var accuracy = 1.23;
 			if(rssi == 0){
 				dist = -1;
 			}else{
 				tmp = Math.pow(10, (tx - rssi) / (20));
 				dist = Math.round(tmp);
 			}
-				
-			if (device.rssi < -100) { rssiWidth = 0; }
-			else if (device.rssi < 0) { rssiWidth = 100 + device.rssi; }
-
+			
+			var binary_string =  window.atob(device.scanRecord);
+			var len = binary_string.length;
+			var bytes = new Uint8Array( len );
+			for (var i = 0; i < len; i++)        {
+				bytes[i] = binary_string.charCodeAt(i);
+			}
+			var semaforo = 'nada';
+			if(bytes[52] == 0x31){
+				semaforo = 'rojo';
+			}else{
+				semaforo = 'verde';
+			}
+			var mayor = ((bytes[25] % 256) * 0x100  ) + (bytes[26] % 256) ;
+			var menor = ((bytes[27] % 256) * 0x100  ) + (bytes[28] % 256) ;;
+			//var menor2 = bytes[28] % 255;
 			// Create tag for device data.
 			var element = $(
 				'<li>'
 				+	'<strong>' + device.name + '</strong><br />'
 				// Do not show address on iOS since it can be confused
 				// with an iBeacon UUID.
-				+	(evothings.os.isIOS() ? '' : device.address + '<br />')
+				+	(device.name[0]=='s' ? semaforo + '<br />' : '')
 				+	'RSSI:' + device.rssi + '<br />'
 				+	'Tx:' +  tx + '<br / >'
+				+	'Mayor:' +  mayor + '<br / >'
+				+	'Menor:' +  menor + '<br / >'
 				+	'Distancia: ' + dist + ' cm. <br />'
-				+ 	'<div style="background:rgb(225,0,0);height:20px;width:'
-				+ 		rssiWidth + '%;"></div>'
 				+ '</li>'
 			);
 
@@ -152,5 +162,7 @@ app.ui.displayStatus = function(message)
 {
 	$('#scan-status').html(message);
 };
+
+
 
 app.initialize();
