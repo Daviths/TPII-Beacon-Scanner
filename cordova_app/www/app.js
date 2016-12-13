@@ -6,12 +6,16 @@ var app = {};
 // Device list.
 app.devices = {};
 
+app.veces = {};
+app.distanciatotal = {} ;
+
 // UI methods.
 app.ui = {};
 
 // Timer that updates the device list and removes inactive
 // devices in case no devices are found by scan.
 app.ui.updateTimer = null;
+
 
 app.initialize = function()
 {
@@ -66,7 +70,7 @@ app.stopScan = function()
 app.ui.onStartScanButton = function()
 {
 	app.startScan(app.ui.deviceFound);
-	app.ui.displayStatus('Scanning...');
+	app.ui.displayStatus('Escaneando');
 	app.ui.updateTimer = setInterval(app.ui.displayDeviceList, 50);
 };
 
@@ -75,7 +79,7 @@ app.ui.onStopScanButton = function()
 {
 	app.stopScan();
 	app.devices = {};
-	app.ui.displayStatus('Scan Paused');
+	app.ui.displayStatus('Escaneo Pausado.');
 	app.ui.displayDeviceList();
 	clearInterval(app.ui.updateTimer);
 };
@@ -88,9 +92,33 @@ app.ui.deviceFound = function(device, errorCode)
 		// Set timestamp for device (this is used to remove
 		// inactive devices).
 		device.timeStamp = Date.now();
+		
+		var tx = device.advertisementData.kCBAdvDataTxPowerLevel;
+		var rssi = device.rssi;
+		var temp = Math.pow(10, (tx - rssi) / (20)) ;
+		device.dist = Math.round(temp);
+		
+		if(app.devices[device.address] != null){
+			
+			if(app.veces[device.address] < 10){
+				app.veces[device.address] += 1;
+			}else{
+				app.veces[device.address] = 0;
+			}
+			//app.distanciatotal[device.address][app.veces[device.address]] = device.dist;
+		}else{
+			//Inicializacion
+			app.veces[device.address] = 0;
+			app.distanciatotal[device.address] = 0;
+			device.arreglo = [11];
+		}
+		
+		var v = app.veces[device.address];
+		//device.arreglo[v] = device.dist; //Por alguna razon esta linea hace que deje de Actualizar las distancias, quedan la primera fija, acá y en la otra funcion que la calcula 		
 
-		// Insert the device into table of found devices.
 		app.devices[device.address] = device;
+		// Insert the device into table of found devices.
+		
 	}
 	else if (errorCode)
 	{
@@ -108,19 +136,40 @@ app.ui.displayDeviceList = function()
 
 	$.each(app.devices, function(key, device)
 	{
-		// Only show devices that are updated during the last 10 seconds.
-		
+
 			// Map the RSSI value to a width in percent for the indicator.
 			var rssiWidth = 100; // Used when RSSI is zero or greater.
 			var tx = device.advertisementData.kCBAdvDataTxPowerLevel;
 			var rssi = device.rssi;
-			var dist = 1.23;
+			var dist = 'Indefinida';
+			var dist2 = 1.23;
 			var tmp = 1.23;
+			var ratio = 1.23;
 			if(rssi == 0){
-				dist = -1;
-			}else{
+				dist2 = -1; 
+			}else{ 
+				/*Da valores incorrectos
+				if(tx != 0){
+					ratio = rssi/tx;
+					if(ratio < 1){
+						tmp = (Math.pow(ratio,10));
+						dist = Math.round(tmp);
+					}else{
+						tmp =  ((0.89976)*Math.pow(ratio,7.7095) + 0.111);
+						dist = Math.round(tmp);
+					}
+				}	*/			
 				tmp = Math.pow(10, (tx - rssi) / (20));
-				dist = Math.round(tmp);
+				dist2 = Math.round(tmp);
+				if(dist2 < 100){
+					dist = 'Muy cerca';
+				}else{
+					if(dist2 < 400){
+						dist = 'Cerca';
+					}else{
+						dist = 'Lejos';
+					}
+				}
 			}
 			
 			var binary_string =  window.atob(device.scanRecord);
@@ -131,14 +180,20 @@ app.ui.displayDeviceList = function()
 			}
 			var semaforo = 'nada';
 			if(bytes[52] == 0x31){
-				semaforo = 'rojo';
+				semaforo = 'Rojo';
 			}else{
-				semaforo = 'verde';
+				semaforo = 'Verde';
 			}
 			var mayor = ((bytes[25] % 256) * 0x100  ) + (bytes[26] % 256) ;
 			var menor = ((bytes[27] % 256) * 0x100  ) + (bytes[28] % 256) ;;
 			//var menor2 = bytes[28] % 255;
 			// Create tag for device data.
+			var promedio = 0;
+			/*if(app.veces[device.address] <= 0){
+				promedio = device.dist;
+			}else{
+				promedio = Math.round(app.distanciatotal[device.address] / app.veces[device.address]);
+			}*/
 			var element = $(
 				'<li>'
 				+	'<strong>' + device.name + '</strong><br />'
@@ -149,7 +204,10 @@ app.ui.displayDeviceList = function()
 				+	'Tx:' +  tx + '<br / >'
 				+	'Mayor:' +  mayor + '<br / >'
 				+	'Menor:' +  menor + '<br / >'
-				+	'Distancia: ' + dist + ' cm. <br />'
+				+	'Veces:' +  app.veces[device.address] + '<br / >'
+				+	'Distancia: ' + dist + ' ('+dist2+' cm). <br />'
+				+	'Distancia del device: ' + device.dist + ' cm. '+' Promedio:'+ promedio +' <br />'
+				//+ 	'Arrglo: ' + device.arreglo[0] + '<br />'
 				+ '</li>'
 			);
 
