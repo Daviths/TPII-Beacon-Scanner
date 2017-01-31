@@ -38,7 +38,16 @@
 		STOP SCAN
 	</button>
 
-	<p id="scan-status">Pausado</p>
+	<button onclick="app.ui.onToggleSemaforoButton()" class="red">
+		Escanear Semaforos
+	</button>
+
+
+	<button onclick="app.ui.onToggleLocalButton()" class="blue">
+		Escanear Locales
+	</button>
+
+	<p id="scan-status">Escaneo Pausado.</p>
 
 	<ul id="found-devices" class="dynamic"></ul>
 

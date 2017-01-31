@@ -9,13 +9,6 @@ app.devices = {};
 var funciones_servidor = {};
 var funciones_by_id = {}
 
-var primeraadicion = true;
-
-var Escanear_por = {
-	SEMAFORO 	: 'semaforo',
-	LOCAL			: 'local'
-};
-
 //app.veces = {};
 app.distanciatotal = {} ;
 // UI methods.
@@ -50,7 +43,6 @@ app.onDeviceReady = function()
 //   errorCode: String
 app.startScan = function(callbackFun)
 {
-	primeraadicion = true;
 	app.stopScan();
 	evothings.ble.startScan(
 		function(device)
@@ -76,71 +68,22 @@ app.stopScan = function()
 	evothings.ble.stopScan();
 };
 
-var estadoScan = false;
 // Se llama cuando se presiona el boton de escanear.
 app.ui.onStartScanButton = function()
 {
-	estadoScan = true;
 	app.startScan(app.ui.deviceFound);
 	app.ui.displayStatus('Escaneando');
 	app.ui.updateTimer = setInterval(app.ui.displayDeviceList, 50);
-
 };
 
 // Se llama cuando se presiona el boton de detener.
 app.ui.onStopScanButton = function()
 {
-	TTS.speak({
-				 text: '',
-				 locale: 'es-AR',
-				 rate: 1.5
-		 },
-	 function () {
-		 //Do Something after success
-	 },
-	 function (reason) {
-		 //Handle the error case
-		 alert('Falló el TTS: '+reason);
-	 }
- );
-	estadoScan = false;
 	app.stopScan();
 	app.devices = {};
 	app.ui.displayStatus('Escaneo Pausado.');
 	app.ui.displayDeviceList();
 	clearInterval(app.ui.updateTimer);
-};
-// Se llama cuando se presiona el boton de Toggle.
-var busca_por = Escanear_por.SEMAFORO;
-
-app.ui.onToggleSemaforoButton = function(){
-	if(busca_por == Escanear_por.SEMAFORO){
-		if(estadoScan){
-			app.ui.onStopScanButton();
-		}else{
-			app.ui.onStartScanButton();
-		}
-	}else{
-		app.ui.onStopScanButton();
-		busca_por = Escanear_por.SEMAFORO;
-		app.ui.onStartScanButton();
-	}
-};
-
-app.ui.onToggleLocalButton = function(){
-	if(busca_por == Escanear_por.LOCAL){
-		if(estadoScan){
-			app.ui.onStopScanButton();
-		}else{
-			app.ui.onStartScanButton();
-		}
-	}else{
-		app.ui.onStopScanButton();
-		busca_por = Escanear_por.LOCAL;
-		app.ui.onStartScanButton();
-	}
-
-
 };
 
 //Recuperar JSON con info del server
@@ -167,21 +110,21 @@ app.ui.deviceFound = function(device, errorCode)
 	{
 		// Se añade la hora para ver que dispositivo es reciente
 		device.timeStamp = Date.now();
-
+		
 		var tx = device.advertisementData.kCBAdvDataTxPowerLevel;
 		var rssi = device.rssi;
 		var temp = Math.pow(10, (tx - rssi) / (20)) ;
 		device.dist = Math.round(temp);
 		var tmp = device.dist;
-
+		
 		/* veces se utilizaba como indice para ir guardando los ultimos 10 y sacar promedio, pero no funciona
 		if(app.devices[device.address] != null){
-
+			
 			if(app.veces[device.address] < 10){
 				app.veces[device.address] += 1;
 			}else{
 				app.veces[device.address] = 0;
-
+				
 			}
 			//app.distanciatotal[device.address][app.veces[device.address]] = device.dist;
 		}else{
@@ -190,52 +133,50 @@ app.ui.deviceFound = function(device, errorCode)
 			app.distanciatotal[device.address] = 0;
 			//device.arreglo = [11];
 		}
-
+		
 		var v = app.veces[device.address];
-		//device.arreglo[v] = device.dist; //Por alguna razon esta linea hace que deje de Actualizar las distancias, quedan la primera fija, acá y en la otra funcion que la calcula
+		//device.arreglo[v] = device.dist; //Por alguna razon esta linea hace que deje de Actualizar las distancias, quedan la primera fija, acá y en la otra funcion que la calcula 		
 		*/
-
+		
 		//Buscamos el dispositivo y almacenamos la funcion en un arreglo
 		//alert(device.name);
-		if(device.name != null){
-
-			getJSON('https://murmuring-tundra-13303.herokuapp.com/beacons/'+device.name+'.json',
-			function(err, data) {
-			  if (err != null) {
-				alert("Something went wrong: " + err + ' | Device: ' + device.name);
-				//json_obj = null;
-			  } else {
-				//json_obj = JSON.parse(data);
-				//alert("Your query count: " + JSON.parse(data).function_id);
-
-				funciones_servidor[device.address] = JSON.parse(data).function_id;
-				//alert('Dentro'+funciones_servidor[device.address]);
-				var id = funciones_servidor[device.address];
-				//alert('ID SOLO:'+id);
-				//Si esa funcion nunca se cargo antes, se busca en el server y se carga en otro arreglo
-				if(funciones_by_id[id] == null){
-					getJSON('https://murmuring-tundra-13303.herokuapp.com/functions/'+id+'.json',
-					function(err, data) {
-					  if (err != null) {
-						alert("Something went wrong: " + err);
-						//json_obj = null;
-					  } else {
-						//json_obj = JSON.parse(data);
-						//alert("Your query count: " + json_obj.estado);
-						funciones_by_id[id] = JSON.parse(data).nombre;
-						//alert(funciones_by_id[id]);
-						//alert(funciones_by_id[funciones_servidor[device.address]]);
-					  }
-					});
-				}
-			  }
-			});
-
-			/*
-			*/
-			app.devices[device.address] = device;
-			// Agregar/actualizar el dispositivo .
-		}
+		getJSON('https://murmuring-tundra-13303.herokuapp.com/beacons/'+device.name+'.json',
+		function(err, data) {
+		  if (err != null) {
+			alert("Something went wrong: " + err);
+			//json_obj = null;
+		  } else {
+			//json_obj = JSON.parse(data);
+			//alert("Your query count: " + JSON.parse(data).function_id);
+			
+			funciones_servidor[device.address] = JSON.parse(data).function_id;
+			//alert('Dentro'+funciones_servidor[device.address]);
+			var id = funciones_servidor[device.address];
+			//alert('ID SOLO:'+id);
+			//Si esa funcion nunca se cargo antes, se busca en el server y se carga en otro arreglo
+			if(funciones_by_id[id] == null){
+				getJSON('https://murmuring-tundra-13303.herokuapp.com/functions/'+id+'.json',
+				function(err, data) {
+				  if (err != null) {
+					alert("Something went wrong: " + err);
+					//json_obj = null;
+				  } else {
+					//json_obj = JSON.parse(data);
+					//alert("Your query count: " + json_obj.estado);
+					funciones_by_id[id] = JSON.parse(data).nombre;
+					//alert(funciones_by_id[id]);
+					//alert(funciones_by_id[funciones_servidor[device.address]]);
+				  }
+				});
+			}
+		  }
+		});
+		
+		/*
+		*/		
+		app.devices[device.address] = device;
+		// Agregar/actualizar el dispositivo .
+		
 	}
 	else if (errorCode)
 	{
@@ -253,17 +194,15 @@ app.ui.displayDeviceList = function()
 
 	$.each(app.devices, function(key, device)
 	{
-
+		
 		var tx = device.advertisementData.kCBAdvDataTxPowerLevel;
 		var rssi = device.rssi;
 		var dist = 'Indefinida';
 		var dist2 = 1.23;
 		var tmp = 1.23;
-		var ratio = 1.23;
-
+		var ratio = 1.23; 
+		
 		var estadosemaforo = 'algo';
-
-
 		/* Recuperar el estado de un semaforo
 		getJSON("https://murmuring-tundra-13303.herokuapp.com/semaforos/1.json",
 		function(err, data) {
@@ -273,14 +212,14 @@ app.ui.displayDeviceList = function()
 		  } else {
 			json_obj = JSON.parse(data);
 			//alert("Your query count: " + json_obj.estado);
-
+			
 		  }
 		});*/
 		//estadosemaforo = json_obj.estado;
-
+		
 		if(rssi == 0){
-			dist2 = -1;
-		}else{
+			dist2 = -1; 
+		}else{ 
 			/*Da valores incorrectos
 			if(tx != 0){
 				ratio = rssi/tx;
@@ -291,7 +230,7 @@ app.ui.displayDeviceList = function()
 					tmp =  ((0.89976)*Math.pow(ratio,7.7095) + 0.111);
 					dist = Math.round(tmp);
 				}
-			}	*/
+			}	*/			
 			tmp = Math.pow(10, (tx - rssi) / (20));
 			dist2 = Math.round(tmp);
 			if(dist2 < 0){
@@ -308,7 +247,7 @@ app.ui.displayDeviceList = function()
 				}
 			}
 		}
-
+		
 		var binary_string =  window.atob(device.scanRecord);
 		var len = binary_string.length;
 		var bytes = new Uint8Array( len );
@@ -334,49 +273,23 @@ app.ui.displayDeviceList = function()
 		var element = $(
 			//Informacion proporcionada por el dispositivo
 			'<li>'
-			//+ 'Informacion proporcionada por el servidor: <br>'
-			//+ 'Funcion: '
-			+ funcion + '.<br>'
-			+ '<hr>'
-			//+	'<strong>' + device.name + '</strong><br />'
+			+	'<strong>' + device.name + '</strong><br />'
 			// Si es semaforo imprime el estado
-			+	(device.name[0]=='s' ? 'Estado: ' + semaforo + '.<br />' : '')
-			//+	'RSSI:' + device.rssi + '<br />' 	//Para referencia
-			//+	'Tx:' +  tx + '<br / >'				//Idem
-			+	'Entre:' +  mayor + '<br / >'
-			+	' y :' +  menor + '.<br / >'
+			+	(device.name[0]=='s' ? 'Estado del semáforo: ' + semaforo + '<br />' : '')
+			+	'RSSI:' + device.rssi + '<br />' 	//Para referencia
+			+	'Tx:' +  tx + '<br / >'				//Idem
+			+	'Mayor:' +  mayor + '<br / >'
+			+	'Menor:' +  menor + '<br / >'
 			//+	'Veces:' +  app.veces[device.address] + '<br / >'
-			+	'Distancia: ' + dist + '.'// + ' ('+dist2+' cm aprox.). <br />'
+			+	'Distancia: ' + dist + ' ('+dist2+' cm). <br />'
 			//+	'Distancia del device: ' + device.dist + ' cm. '+' Promedio:'+ promedio +' <br />'
+			+ '<hr>'
+			+ 'Informacion proporcionada por el servidor: <br>' 
+			+ '[PH] Funcion: '+ funcion + '<br>'
 			+ '</li>'
 		);
 
-		if(busca_por == Escanear_por.SEMAFORO){
-			if(device.name[0]=='s'){
-				$('#found-devices').append(element);
-				if(primeraadicion){
-					primeraadicion = false;
-					algoTTS();
-				}
-			}
-		}
-
-		if(busca_por == Escanear_por.LOCAL){
-			if(device.name[0]!='s'){
-				$('#found-devices').append(element);
-				if(primeraadicion){
-					primeraadicion = false;
-					algoTTS();
-				}
-			}
-		}
-
-		/*$('#found-devices').append(element);
-		if(primeraadicion){
-			primeraadicion = false;
-			algoTTS();
-		}*/
-
+		$('#found-devices').append(element);
 	});
 };
 
@@ -386,28 +299,6 @@ app.ui.displayStatus = function(message)
 	$('#scan-status').html(message);
 };
 
-var indiceTTS = 0;
 
-var algoTTS = function(){
-	var lis = document.getElementById("found-devices").getElementsByTagName("li");
-	if(indiceTTS >= lis.length){
-		indiceTTS = 0;
-	}
-	TTS.speak({
-				 text: lis[indiceTTS].textContent,
-				 locale: 'es-AR',
-				 rate: 1.5
-		 },
-	 function () {
-		 //Do Something after success
-		 indiceTTS = indiceTTS + 1;
-		 algoTTS();
-	 },
-	 function (reason) {
-		 //Handle the error case
-		 alert('Falló el TTS: '+reason);
-	 }
- );
-};
 
 app.initialize();

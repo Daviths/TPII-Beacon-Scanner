@@ -47,6 +47,14 @@ module.exports = [
         "clobbers": [
             "evothings.ble"
         ]
+    },
+    {
+        "id": "cordova-plugin-tts.tts",
+        "file": "plugins/cordova-plugin-tts/www/tts.js",
+        "pluginId": "cordova-plugin-tts",
+        "clobbers": [
+            "TTS"
+        ]
     }
 ];
 module.exports.metadata = 
@@ -56,7 +64,8 @@ module.exports.metadata =
     "cordova-plugin-compat": "1.1.0",
     "cordova-plugin-camera": "2.3.0",
     "com.matd.coolplugin": "0.2.11",
-    "cordova-plugin-ble": "2.0.1"
+    "cordova-plugin-ble": "2.0.1",
+    "cordova-plugin-tts": "0.2.3"
 };
 // BOTTOM OF METADATA
 });

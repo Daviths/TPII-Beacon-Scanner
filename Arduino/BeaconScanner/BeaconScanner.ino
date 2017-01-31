@@ -31,11 +31,11 @@ void loop() {
   }
   if(contador == 0){
     if(estado == 1){
-      //mySerial.print("AT+FLAG0");
+      mySerial.print("AT+FLAG0");
       estado = 0;
       contador = SEG * S_VERDE;
     }else{
-      //mySerial.print("AT+FLAG1");
+      mySerial.print("AT+FLAG1");
       estado = 1;
       contador = SEG * S_ROJO;
     }    
