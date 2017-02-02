@@ -1,10 +1,10 @@
 // JavaScript para escanear dispositivos BLE.
 
 // Application object.
-var app = {};
+var app2 = {};
 
 // Listado de dispositivos.
-app.devices = {};
+app2.devices = {};
 //Variables usadas para almacenar las funciones levantadas desde el servidor
 var funciones_servidor = {};
 var funciones_by_id = {}
@@ -16,27 +16,25 @@ var Escanear_por = {
 	LOCAL			: 'locales'
 };
 
-app.distanciatotal = {} ;
-// UI methods.
-app.ui = {};
+app2.distanciatotal = {} ;
 
 // Timer that updates the device list and removes inactive
 // devices in case no devices are found by scan.
-app.ui.updateTimer = null;
+updateTimer = null;
 
 //Inicializa la funcion
-app.initialize = function()
+app2.initialize = function()
 {
 	document.addEventListener(
 		'deviceready',
-		function() { evothings.scriptsLoaded(app.onDeviceReady) },
+		function() { evothings.scriptsLoaded(app2.onDeviceReady) },
 		false);
 };
 
-app.onDeviceReady = function()
+app2.onDeviceReady = function()
 {
 	// Not used.
-	// Here you can update the UI to say that
+	// Here you can update the to say that
 	// the device (the phone/tablet) is ready
 	// to use BLE and other Cordova functions.
 };
@@ -47,10 +45,10 @@ app.onDeviceReady = function()
 //   callbackFun(deviceInfo, errorCode)
 //   deviceInfo: address, rssi, name
 //   errorCode: String
-app.startScan = function(callbackFun)
+app2.startScan = function(callbackFun)
 {
 	primera_adicion = true;
-	app.stopScan();
+	app2.stopScan();
 	evothings.ble.startScan(
 		function(device)
 		{
@@ -70,31 +68,31 @@ app.startScan = function(callbackFun)
 };
 
 // Dejar de escanear.
-app.stopScan = function()
+app2.stopScan = function()
 {
 	evothings.ble.stopScan();
 };
 //Variable para intercambiar el estado de escaneo
 var estadoScan = false;
 // Se llama cuando se presiona el boton de escanear.
-app.ui.onStartScanButton = function()
+onStartScanButton = function()
 {
 	estadoScan = true;
-	app.startScan(app.ui.deviceFound);
-	app.ui.displayStatus('Escaneando');
-	app.ui.updateTimer = setInterval(app.ui.displayDeviceList, 50);
+	app2.startScan(deviceFound);
+	displayStatus('Escaneando');
+	updateTimer = setInterval(displayDeviceList, 50);
 
 };
 
 // Se llama cuando se presiona el boton de detener.
-app.ui.onStopScanButton = function()
+onStopScanButton = function()
 {
 	estadoScan = false;
-	app.stopScan();
-	app.devices = {};
-	app.ui.displayStatus('Escaneo Pausado.');
-	app.ui.displayDeviceList();
-	clearInterval(app.ui.updateTimer);
+	app2.stopScan();
+	app2.devices = {};
+	displayStatus('Escaneo Pausado.');
+	displayDeviceList();
+	clearInterval(updateTimer);
 };
 // Se llama  a estas funciones cuando se presiona los boton de escanear Semaforos/Locales
 var busca_por = Escanear_por.SEMAFORO;
@@ -109,7 +107,7 @@ var ToggleEscanear = function(escaneapor){
 				 },
 			 function () {
 				 //Do Something after success
-				 app.ui.onStopScanButton();
+				 onStopScanButton();
 			 },
 			 function (reason) {
 				 //Handle the error case
@@ -125,7 +123,7 @@ var ToggleEscanear = function(escaneapor){
 				 },
 			 function () {
 				 //Do Something after success
-				 app.ui.onStartScanButton();
+				 onStartScanButton();
 			 },
 			 function (reason) {
 				 //Handle the error case
@@ -134,7 +132,7 @@ var ToggleEscanear = function(escaneapor){
 		 );
 		}
 	}else{
-		app.ui.onStopScanButton();
+		onStopScanButton();
 		busca_por = escaneapor;
 		TTS.speak({
 					 text: 'Escaneando ' + escaneapor,
@@ -143,7 +141,7 @@ var ToggleEscanear = function(escaneapor){
 			 },
 		 function () {
 			 //Do Something after success
-			 app.ui.onStartScanButton();
+			 onStartScanButton();
 		 },
 		 function (reason) {
 			 //Handle the error case
@@ -153,11 +151,11 @@ var ToggleEscanear = function(escaneapor){
 	}
 }
 
-app.ui.onToggleSemaforoButton = function(){
+onToggleSemaforoButton = function(){
 	 ToggleEscanear(Escanear_por.SEMAFORO);
 };
 
-app.ui.onToggleLocalButton = function(){
+onToggleLocalButton = function(){
 	 ToggleEscanear(Escanear_por.LOCAL);
 };
 
@@ -179,7 +177,7 @@ var getJSON = function(url, callback) {
 var json_obj;
 var funcionId;
 // Se llama cuando se encuentra un dispositivo.
-app.ui.deviceFound = function(device, errorCode)
+deviceFound = function(device, errorCode)
 {
 	if (device)
 	{
@@ -194,7 +192,7 @@ app.ui.deviceFound = function(device, errorCode)
 
 		//Buscamos el dispositivo y almacenamos la funcion en un arreglo
 		if(device.name != null){
-			getJSON('https://murmuring-tundra-13303.herokuapp.com/beacons/'+device.name+'.json',
+			getJSON('https://murmuring-tundra-13303.herokuapp2.com/beacons/'+device.name+'.json',
 			function(err, data) {
 			  if (err != null) {
 				alert("Something went wrong: " + err + ' | Device: ' + device.name);
@@ -203,7 +201,7 @@ app.ui.deviceFound = function(device, errorCode)
 				var id = funciones_servidor[device.address];
 				//Si esa funcion nunca se cargo antes, se busca en el server y se carga en otro arreglo
 				if(funciones_by_id[id] == null){
-					getJSON('https://murmuring-tundra-13303.herokuapp.com/functions/'+id+'.json',
+					getJSON('https://murmuring-tundra-13303.herokuapp2.com/functions/'+id+'.json',
 					function(err, data) {
 					  if (err != null) {
 						alert("Something went wrong: " + err);
@@ -215,12 +213,12 @@ app.ui.deviceFound = function(device, errorCode)
 			  }
 			});
 			// Agregar/actualizar el dispositivo .
-			app.devices[device.address] = device;
+			app2.devices[device.address] = device;
 		}
 	}
 	else if (errorCode)
 	{
-		app.ui.displayStatus('Scan Error: ' + errorCode);
+		displayStatus('Scan Error: ' + errorCode);
 	}
 };
 
@@ -233,14 +231,14 @@ var Agregar_elemento = function(element){
 }
 
 // Mostar el listado de dispositivos.
-app.ui.displayDeviceList = function()
+displayDeviceList = function()
 {
 	// Vaciar el listado de dispositivos.
 	$('#found-devices').empty();
 
 	var timeNow = Date.now();//Hora actual
 
-	$.each(app.devices, function(key, device)
+	$.each(app2.devices, function(key, device)
 	{
 
 		var tx = device.advertisementData.kCBAdvDataTxPowerLevel;
@@ -296,7 +294,7 @@ app.ui.displayDeviceList = function()
 		}
 		//Calculamos el mayor y menos desde el arreglo del scanRecord
 		var mayor = ((bytes[25] % 256) * 0x100  ) + (bytes[26] % 256) ;
-		var menor = ((bytes[27] % 256) * 0x100  ) + (bytes[28] % 256) ;;
+		var menor = ((bytes[27] % 256) * 0x100  ) + (bytes[28] % 256) ;
 		//Buscamos la funcion del beacon en nuestro arreglo
 		var funcion = "Procesando...."; //Valor para leer mientras busca la funcion real
 		if( funciones_by_id[funciones_servidor[device.address]] != null){
@@ -339,7 +337,7 @@ app.ui.displayDeviceList = function()
 };
 
 // Actualizar el tag de estado en el html
-app.ui.displayStatus = function(message)
+displayStatus = function(message)
 {
 	$('#scan-status').html(message);
 };
@@ -351,21 +349,23 @@ var algoTTS = function(){
 	if(indiceTTS >= lis.length){
 		indiceTTS = 0;
 	}
-	TTS.speak({
-				 text: lis[indiceTTS].textContent,
-				 locale: 'es-AR',
-				 rate: 1.5
+	if(lis[indiceTTS] != null){
+		TTS.speak({
+					 text: lis[indiceTTS].textContent,
+					 locale: 'es-AR',
+					 rate: 1.5
+			 },
+		 function () {
+			 //Do Something after success
+			 indiceTTS = indiceTTS + 1;
+			 algoTTS();
 		 },
-	 function () {
-		 //Do Something after success
-		 indiceTTS = indiceTTS + 1;
-		 algoTTS();
-	 },
-	 function (reason) {
-		 //Handle the error case
-		 alert('Falló el TTS: '+reason);
-	 }
- );
+		 function (reason) {
+			 //Handle the error case
+			 alert('Falló el TTS: '+reason);
+		 }
+	 );
+ }
 };
 
-app.initialize();
+app2.initialize();

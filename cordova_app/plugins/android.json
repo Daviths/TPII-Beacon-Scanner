@@ -21,10 +21,19 @@
         },
         "cordova-plugin-tts": {
             "PACKAGE_NAME": "com.example.hello"
+        },
+        "cordova-plugin-bluetooth-serial": {
+            "PACKAGE_NAME": "com.example.hello"
+        },
+        "cordova-plugin-http": {
+            "PACKAGE_NAME": "com.example.hello"
         }
     },
     "dependent_plugins": {
         "cordova-plugin-compat": {
+            "PACKAGE_NAME": "com.example.hello"
+        },
+        "cordova-plugin-file": {
             "PACKAGE_NAME": "com.example.hello"
         }
     }

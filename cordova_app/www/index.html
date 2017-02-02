@@ -4,53 +4,38 @@
 <head>
 
 	<meta charset="utf-8" />
-	<meta name="viewport" content="width=device-width, user-scalable=no,
-		shrink-to-fit=no, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0" />
+	<meta name="viewport" content="width=device-width, user-scalable=no, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0" />
 
 	<title>BLE Scan</title>
 
 	<style>
-		@import 'ui/css/evothings-app.css';
+		@import 'ui/css/index.css';
 	</style>
 
 	<script>
 	// Redirect console.log to Evothings Workbench.
 	if (window.hyper && window.hyper.log) { console.log = hyper.log }
 	</script>
+</head>
+<body ontouchstart=""><!-- ontouchstart="" enables low-delay CSS transitions. -->
+	<!--h1>Bastón inteligente</h1-->
+	<div id="container">
+		<button onclick="app.manageConnection()">Conectar Baston</button>
+		<button onclick="onToggleSemaforoButton()">Escanear Semaforos</button>
+		<button onclick="onToggleLocalButton()">Escanear Locales</button>
+	</div>
+	<p id="scan-status" hidden>Escaneo Pausado.</p>
+
+	<h1 id="message" hidden></h1>
+
+	<ul id="found-devices" class="dynamic" hidden></ul>
 
 	<script src="cordova.js"></script>
 	<script src="libs/jquery/jquery.js"></script>
 	<script src="libs/evothings/evothings.js"></script>
 	<script src="libs/evothings/ui/ui.js"></script>
 	<script src="app.js"></script>
-
-</head>
-
-<body ontouchstart=""><!-- ontouchstart="" enables low-delay CSS transitions. -->
-
-	<h1>BLE Scan</h1>
-
-	<button onclick="app.ui.onStartScanButton()" class="green">
-		START SCAN
-	</button>
-
-	<button onclick="app.ui.onStopScanButton()" class="charcoal">
-		STOP SCAN
-	</button>
-
-	<button onclick="app.ui.onToggleSemaforoButton()" class="red">
-		Escanear Semaforos
-	</button>
-
-
-	<button onclick="app.ui.onToggleLocalButton()" class="blue">
-		Escanear Locales
-	</button>
-
-	<p id="scan-status">Escaneo Pausado.</p>
-
-	<ul id="found-devices" class="dynamic"></ul>
-
+	<script src="index.js"></script>
 
 </body>
 
