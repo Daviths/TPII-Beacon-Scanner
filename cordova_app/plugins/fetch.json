@@ -70,5 +70,13 @@
         },
         "is_top_level": false,
         "variables": {}
+    },
+    "com-badrit-macaddress": {
+        "source": {
+            "type": "registry",
+            "id": "com-badrit-macaddress"
+        },
+        "is_top_level": true,
+        "variables": {}
     }
 }

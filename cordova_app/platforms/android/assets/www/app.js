@@ -3,11 +3,14 @@
 // Application object.
 var app2 = {};
 
+//Servidor de los beacons
+var APIbeacon = 'http://192.168.0.11:3000/';//https://murmuring-tundra-13303.herokuapp.com/';
 // Listado de dispositivos.
 app2.devices = {};
 //Variables usadas para almacenar las funciones levantadas desde el servidor
 var funciones_servidor = {};
-var funciones_by_id = {}
+var funciones_by_id = {};
+var nombres_largos = {};
 //Variable utilizada para que solo comienze a leer los beacons al encontrar el primero y no cada uno
 var primera_adicion = true;
 //Enumerativo para distingir si se escanea solo semaforos o solo locales.
@@ -33,10 +36,7 @@ app2.initialize = function()
 
 app2.onDeviceReady = function()
 {
-	// Not used.
-	// Here you can update the to say that
-	// the device (the phone/tablet) is ready
-	// to use BLE and other Cordova functions.
+
 };
 
 
@@ -100,6 +100,7 @@ var busca_por = Escanear_por.SEMAFORO;
 var ToggleEscanear = function(escaneapor){
 	if(busca_por == escaneapor){
 		if(estadoScan){
+			onStopScanButton();
 			TTS.speak({
 						 text: 'Escaneo Pausado.',
 						 locale: 'es-AR',
@@ -107,7 +108,6 @@ var ToggleEscanear = function(escaneapor){
 				 },
 			 function () {
 				 //Do Something after success
-				 onStopScanButton();
 			 },
 			 function (reason) {
 				 //Handle the error case
@@ -159,22 +159,6 @@ onToggleLocalButton = function(){
 	 ToggleEscanear(Escanear_por.LOCAL);
 };
 
-//Recuperar JSON con info del server
-var getJSON = function(url, callback) {
-    var xhr = new XMLHttpRequest();
-    xhr.open("get", url, true);
-    xhr.responseType = "json";
-    xhr.onload = function() {
-      var status = xhr.status;
-      if (status == 200) {
-        callback(null, xhr.response);
-      } else {
-        callback(status);
-      }
-    };
-    xhr.send();
-};
-var json_obj;
 var funcionId;
 // Se llama cuando se encuentra un dispositivo.
 deviceFound = function(device, errorCode)
@@ -184,34 +168,48 @@ deviceFound = function(device, errorCode)
 		// Se añade la hora para ver que dispositivo es reciente
 		device.timeStamp = Date.now();
 
-		/*var tx = device.advertisementData.kCBAdvDataTxPowerLevel;
-		var rssi = device.rssi;
-		var temp = Math.pow(10, (tx - rssi) / (20)) ;
-		device.dist = Math.round(temp);
-		var tmp = device.dist;*/
-
 		//Buscamos el dispositivo y almacenamos la funcion en un arreglo
 		if(device.name != null){
-			getJSON('https://murmuring-tundra-13303.herokuapp2.com/beacons/'+device.name+'.json',
-			function(err, data) {
-			  if (err != null) {
-				alert("Something went wrong: " + err + ' | Device: ' + device.name);
-			  } else {
-				funciones_servidor[device.address] = JSON.parse(data).function_id;
-				var id = funciones_servidor[device.address];
-				//Si esa funcion nunca se cargo antes, se busca en el server y se carga en otro arreglo
-				if(funciones_by_id[id] == null){
-					getJSON('https://murmuring-tundra-13303.herokuapp2.com/functions/'+id+'.json',
-					function(err, data) {
-					  if (err != null) {
-						alert("Something went wrong: " + err);
-					  } else {
-						funciones_by_id[id] = JSON.parse(data).nombre;
-					  }
-					});
+			//Primero recuperamos la direccion Mac
+			window.MacAddress.getMacAddress(
+				function(macAddress) {
+					console.log(macAddress);
+					//Luego buscamos el beacon en el servidor por su nombre (identificador)
+					cordovaHTTP.get(APIbeacon+'beacons/'+device.name+'.json', {
+						mac_address: macAddress,		//Enviamos la direccion de mac como parametro del GET
+					 }, { }, function(response) {
+							console.log(JSON.parse(response.data).nombre_largo);
+							//Almacenamos el id de funcion
+							funciones_servidor[device.address] = JSON.parse(response.data).function_id;
+			 				nombres_largos[device.address] = JSON.parse(response.data).nombre_largo;
+			 				var id = funciones_servidor[device.address];
+			 				//Si esa funcion nunca se cargo antes, se busca en el server y se carga en otro arreglo
+			 				if(funciones_by_id[id] == null){
+								cordovaHTTP.get(APIbeacon+'functions/'+id+'.json', {
+								 }, { }, function(response) {
+										 funciones_by_id[id] = JSON.parse(response.data).nombre;
+								 }, function(response) {
+										 // prints 403
+										 console.log(response.status);
+										 //prints Permission denied
+										 console.log(response.error);
+								 });
+							}
+					 }, function(response) {
+							 // prints 403
+							 if(response.status == 404){
+								 	nombres_largos[device.address] = "Bicon no registrado";
+							 }
+							 console.log(response.status);
+							 //prints Permission denied
+							 console.log(response.error);
+					 });
+					//alert(macAddress);
+				},
+				function(fail) {
+					alert(fail);
 				}
-			  }
-			});
+			);
 			// Agregar/actualizar el dispositivo .
 			app2.devices[device.address] = device;
 		}
@@ -283,7 +281,7 @@ displayDeviceList = function()
 		var binary_string =  window.atob(device.scanRecord);
 		var len = binary_string.length;
 		var bytes = new Uint8Array( len );
-		for (var i = 0; i < len; i++)        {
+		for (var i = 0; i < len; i++){
 			bytes[i] = binary_string.charCodeAt(i);
 		}
 		//Buscamos en el arrelgo el valor del flag y asignamos el estado correspondiente
@@ -300,17 +298,21 @@ displayDeviceList = function()
 		if( funciones_by_id[funciones_servidor[device.address]] != null){
 			funcion = funciones_by_id[funciones_servidor[device.address]];
 		}
+		//Buscamos el nombre largo del beacon
+		var nlargo = 'Esperando nombre';
+		if(nombres_largos[device.address] != null){
+			nlargo = nombres_largos[device.address];
+		}
 		//Cargamos todo en el elemento a leer
 		var element = $(
 			'<li>'
 			//+ 'Informacion proporcionada por el servidor: <br>'
-			//+ 'Funcion: '
-			+ funcion + '.<br>'
+
 			+ '<hr>'
 			//Informacion proporcionada por el dispositivo
 			//+	'<strong>' + device.name + '</strong><br />'
 			// Si es semaforo imprime el estado
-			+	(device.name[0]=='s' ? 'Estado: ' + semaforo + '.<br />' : '')
+			+	(device.name[0]=='s' ? 'Semáforo: ' + semaforo + '.<br />' : funcion + '.<br>' + nlargo + '.<br />')
 			//+	'RSSI:' + device.rssi + '<br />' 	//Para referencia
 			//+	'Tx:' +  tx + '<br / >'				//Idem
 			+	'Entre:' +  mayor + '<br / >'

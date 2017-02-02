@@ -27,6 +27,9 @@
         },
         "cordova-plugin-http": {
             "PACKAGE_NAME": "com.example.hello"
+        },
+        "com-badrit-macaddress": {
+            "PACKAGE_NAME": "com.example.hello"
         }
     },
     "dependent_plugins": {

@@ -244,6 +244,14 @@ module.exports = [
         "clobbers": [
             "CordovaHttpPlugin"
         ]
+    },
+    {
+        "id": "com-badrit-macaddress.MacAddress",
+        "file": "plugins/com-badrit-macaddress/www/MacAddress.js",
+        "pluginId": "com-badrit-macaddress",
+        "clobbers": [
+            "window.MacAddress"
+        ]
     }
 ];
 module.exports.metadata = 
@@ -257,7 +265,8 @@ module.exports.metadata =
     "cordova-plugin-tts": "0.2.3",
     "cordova-plugin-bluetooth-serial": "0.4.6",
     "cordova-plugin-file": "4.3.1",
-    "cordova-plugin-http": "1.2.0"
+    "cordova-plugin-http": "1.2.0",
+    "com-badrit-macaddress": "0.2.0"
 };
 // BOTTOM OF METADATA
 });

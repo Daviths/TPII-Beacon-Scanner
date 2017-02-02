@@ -35,6 +35,10 @@
                         {
                             "xml": "<feature name=\"CordovaHttpPlugin\"><param name=\"android-package\" value=\"com.synconset.CordovaHttpPlugin\" /></feature>",
                             "count": 1
+                        },
+                        {
+                            "xml": "<feature name=\"MacAddressPlugin\"><param name=\"android-package\" value=\"com.badrit.MacAddress.MacAddressPlugin\" /></feature>",
+                            "count": 1
                         }
                     ],
                     "/widget": [
@@ -51,6 +55,10 @@
                         {
                             "xml": "<uses-permission android:name=\"android.permission.WRITE_EXTERNAL_STORAGE\" />",
                             "count": 2
+                        },
+                        {
+                            "xml": "<uses-permission android:name=\"android.permission.ACCESS_WIFI_STATE\" />",
+                            "count": 1
                         }
                     ],
                     "/manifest": [
@@ -111,6 +119,9 @@
             "PACKAGE_NAME": "com.example.hello"
         },
         "cordova-plugin-http": {
+            "PACKAGE_NAME": "com.example.hello"
+        },
+        "com-badrit-macaddress": {
             "PACKAGE_NAME": "com.example.hello"
         }
     },
@@ -360,6 +371,14 @@
             "clobbers": [
                 "CordovaHttpPlugin"
             ]
+        },
+        {
+            "id": "com-badrit-macaddress.MacAddress",
+            "file": "plugins/com-badrit-macaddress/www/MacAddress.js",
+            "pluginId": "com-badrit-macaddress",
+            "clobbers": [
+                "window.MacAddress"
+            ]
         }
     ],
     "plugin_metadata": {
@@ -371,6 +390,7 @@
         "cordova-plugin-tts": "0.2.3",
         "cordova-plugin-bluetooth-serial": "0.4.6",
         "cordova-plugin-file": "4.3.1",
-        "cordova-plugin-http": "1.2.0"
+        "cordova-plugin-http": "1.2.0",
+        "com-badrit-macaddress": "0.2.0"
     }
 }
