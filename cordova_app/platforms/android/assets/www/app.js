@@ -4,7 +4,7 @@
 var app2 = {};
 
 //Servidor de los beacons
-var APIbeacon = 'http://192.168.0.11:3000/';//https://murmuring-tundra-13303.herokuapp.com/';
+var APIbeacon = 'https://murmuring-tundra-13303.herokuapp.com/';
 // Listado de dispositivos.
 app2.devices = {};
 //Variables usadas para almacenar las funciones levantadas desde el servidor
